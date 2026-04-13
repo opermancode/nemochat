@@ -4,16 +4,55 @@ services:
     container_name: nemochat_db
     restart: always
     environment:
-      # These variables initialize the DB on the FIRST run
       MYSQL_DATABASE: nemochat
       MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     volumes:
-      # "mysql_data" is the persistent volume
       - mysql_data:/var/lib/mysql
-      # This initializes your tables automatically
       - ../backend/migrations:/docker-entrypoint-initdb.d 
     networks:
       - nemochat_network
 
+  backend:
+    build: ../backend
+    container_name: nemochat_backend
+    restart: always
+    environment:
+      DB_HOST: db
+      DB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      - db
+    networks:
+      - nemochat_network
+
+  frontend:
+    build: ../frontend
+    container_name: nemochat_frontend
+    restart: always
+    environment:
+      NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+    networks:
+      - nemochat_network
+
+  proxy:
+    image: nginx:alpine
+    container_name: nemochat_proxy
+    restart: always
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - nemochat_network
+
+# --- CRITICAL MISSING SECTION BELOW ---
+
+networks:
+  nemochat_network:
+    driver: bridge
+
 volumes:
-  mysql_data: # This tells Docker to manage a persistent storage area
+  mysql_data:
