@@ -6,7 +6,7 @@ import { MessageSquare, LogOut, Shield } from 'lucide-react';
 
 export default function Dashboard() {
   const router = useRouter();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState(null);
 
   useEffect(() => {
     const storedUser = localStorage.getItem('nemo_user');

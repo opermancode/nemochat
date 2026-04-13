@@ -7,19 +7,33 @@ export default function GlobalSearch() {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
 
-  const handleSearch = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    if (e.target.value.length > 2) {
+  const handleSearch = async (e) => {
+    const nextQuery = e.target.value;
+    setQuery(nextQuery);
+
+    if (nextQuery.length > 2) {
       const user = JSON.parse(localStorage.getItem('nemo_user') || '{}');
-      const { data } = await api.get(`/search?q=${e.target.value}&userId=${user.id}`);
-      setResults(data);
+      try {
+        const { data } = await api.get(`/search?q=${encodeURIComponent(nextQuery)}&userId=${user.id}`);
+        setResults(data);
+      } catch (error) {
+        console.error('Search failed:', error);
+        setResults([]);
+      }
+    } else {
+      setResults([]);
     }
   };
 
-  const sendRequest = async (targetId: number) => {
+  const sendRequest = async (targetId) => {
     const user = JSON.parse(localStorage.getItem('nemo_user') || '{}');
-    await api.post('/request', { senderId: user.id, receiverId: targetId });
-    alert('Handshake request sent!');
+    try {
+      await api.post('/request', { senderId: user.id, receiverId: targetId });
+      alert('Handshake request sent!');
+    } catch (error) {
+      console.error('Failed to send request:', error);
+      alert('Failed to send request.');
+    }
   };
 
   return (
@@ -36,7 +50,7 @@ export default function GlobalSearch() {
       </div>
 
       <div className="mt-6 space-y-4">
-        {results.map((u: any) => (
+        {results.map((u) => (
           <div key={u.id} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
             <div>
               <p className="font-bold">{u.username}</p>
