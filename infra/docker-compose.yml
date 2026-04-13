@@ -1,0 +1,19 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: nemochat_db
+    restart: always
+    environment:
+      # These variables initialize the DB on the FIRST run
+      MYSQL_DATABASE: nemochat
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    volumes:
+      # "mysql_data" is the persistent volume
+      - mysql_data:/var/lib/mysql
+      # This initializes your tables automatically
+      - ../backend/migrations:/docker-entrypoint-initdb.d 
+    networks:
+      - nemochat_network
+
+volumes:
+  mysql_data: # This tells Docker to manage a persistent storage area
