@@ -3,11 +3,11 @@ import { useState, useEffect, useRef } from 'react';
 import { useSocket } from '@/hooks/useSocket';
 import { Send } from 'lucide-react';
 
-export default function ChatWindow({ roomId, currentUser, targetUser }: any) {
+export default function ChatWindow({ roomId, currentUser, targetUser }) {
   const socket = useSocket();
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef(null);
 
   useEffect(() => {
     if (!socket) return;
@@ -27,14 +27,14 @@ export default function ChatWindow({ roomId, currentUser, targetUser }: any) {
     return () => {
       socket.off('receive_message');
     };
-  }, [socket, roomId]);
+  }, [socket, roomId, currentUser?.id, targetUser?.id]);
 
   // Auto-scroll to bottom on new message
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const sendMessage = (e: React.FormEvent) => {
+  const sendMessage = (e) => {
     e.preventDefault();
     if (!input.trim() || !socket) return;
 
